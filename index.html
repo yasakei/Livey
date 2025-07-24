@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            font-family: 'Nunito', sans-serif; /* Font set to Nunito */
+            display: flex;
+            align-items: flex-end; /* Align to the bottom */
+            justify-content: center;
+            padding-bottom: 10vh; /* Add some space from the bottom edge */
+            color: #2a2a2a; /* Darker text color for better contrast */
+        }
+
+        #gif-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .clock-container {
+            text-align: center;
+            z-index: 1;
+        }
+
+        #clock {
+            font-size: 200px; /* Increased font size */
+            font-weight: 700; /* Bold font weight for visibility */
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.2) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            /* Layered shadows for a liquid glass effect */
+            text-shadow: 
+                0 -1px 1px rgba(255, 255, 255, 0.6), /* Sharp top highlight for gloss */
+                1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for separation */
+            letter-spacing: 2px; /* Stretched font effect */
+            position: relative;
+            transition: transform 0.4s ease;
+            animation: float 3s ease-in-out infinite; /* Floating animation */
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .separator {
+            font-weight: 300;
+            color: #2a2a2a; /* Ensure the separator matches the clock text color */
+            position: relative;
+            font-size: 200px; /* Ensure separator matches clock size */
+            animation: blink 1s steps(1) infinite; /* Blink animation for separator */
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+    .spotify-card {
+            position: fixed;
+            top: 20px; /* Changed from bottom */
+            left: 20px;
+            width: 300px;
+            padding: 15px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px) saturate(1.2);
+            -webkit-backdrop-filter: blur(10px) saturate(1.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+            font-family: 'Nunito', sans-serif;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .spotify-card.visible {
+            opacity: 1;
+        }
+        .spotify-card img {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+        }
+        .spotify-card .song-info {
+            flex-grow: 1;
+        }
+        .spotify-card .song-name {
+            font-weight: 700;
+            font-size: 16px;
+            margin: 0;
+        }
+        .spotify-card .artist-name {
+            font-weight: 400;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        .spotify-card .progress-container {
+            width: 100%;
+        }
+        .spotify-card .progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        .spotify-card .progress {
+            height: 100%;
+            background-color: #FFFFFF; /* Changed to white */
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        .spotify-card .time-indicator {
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <img id="gif-bg" alt="Animated background">
+    <div class="clock-container">
+        <div id="clock" data-text="12:00:00">
+            12<span class="separator">:</span>00<span class="separator">:</span>00
+        </div>
+    </div>
+
+    <div id="spotify-widget" class="spotify-card">
+        <img id="album-cover" src="" alt="Album Cover">
+        <div class="song-info">
+            <p id="song-name" class="song-name">Song Name</p>
+            <p id="artist-name" class="artist-name">Artist</p>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div id="progress" class="progress"></div>
+                </div>
+                <div class="time-indicator">
+                    <span id="current-time">0:00</span>
+                    <span id="total-time">0:00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        document.getElementById('gif-bg').src = gifSource;
+
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const minutesString = minutes < 10 ? '0' + minutes : minutes;
+            const secondsString = seconds < 10 ? '0' + seconds : seconds;
+
+            const timeString = `${hours}<span class="separator">:</span>${minutesString}<span class="separator">:</span>${secondsString}`;
+            document.getElementById('clock').innerHTML = timeString;
+            document.getElementById('clock').setAttribute('data-text', `${hours}:${minutesString}:${secondsString}`);
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        const spotifyWidget = document.getElementById('spotify-widget');
+        const albumCover = document.getElementById('album-cover');
+        const songName = document.getElementById('song-name');
+        const artistName = document.getElementById('artist-name');
+        const progressBar = document.getElementById('progress');
+        const currentTimeEl = document.getElementById('current-time');
+        const totalTimeEl = document.getElementById('total-time');
+
+        let progressInterval = null;
+
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+
+        function stopProgressInterval() {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+        }
+
+        async function fetchCurrentlyPlaying() {
+            try {
+                const response = await fetch('/currently-playing');
+                if (response.status === 200) {
+                    const data = await response.json();
+                    if (data.item) {
+                        stopProgressInterval(); // Clear any existing timer
+
+                        const song = data.item;
+                        const progressMs = data.progress_ms;
+                        const durationMs = song.duration_ms;
+                        const fetchTime = Date.now();
+
+                        // Update UI with fetched data
+                        albumCover.src = song.album.images[0].url;
+                        songName.textContent = song.name;
+                        artistName.textContent = song.artists.map(artist => artist.name).join(', ');
+                        totalTimeEl.textContent = formatTime(durationMs);
+
+                        // Start a new client-side timer to smoothly update the progress bar
+                        progressInterval = setInterval(() => {
+                            const elapsedTime = Date.now() - fetchTime;
+                            const currentProgress = progressMs + elapsedTime;
+
+                            if (currentProgress >= durationMs) {
+                                stopProgressInterval();
+                                // Wait for the next poll to get the new song
+                                return;
+                            }
+
+                            const progressPercent = (currentProgress / durationMs) * 100;
+                            progressBar.style.width = `${progressPercent}%`;
+                            currentTimeEl.textContent = formatTime(currentProgress);
+                        }, 1000);
+
+                        spotifyWidget.classList.add('visible');
+                    } else {
+                        stopProgressInterval();
+                        spotifyWidget.classList.remove('visible');
+                    }
+                } else if (response.status === 204) {
+                    stopProgressInterval();
+                    spotifyWidget.classList.remove('visible');
+                } else {
+                    stopProgressInterval();
+                    spotifyWidget.classList.remove('visible');
+                }
+            } catch (error) {
+                console.error('Error fetching Spotify data:', error);
+                stopProgressInterval();
+                spotifyWidget.classList.remove('visible');
+            }
+        }
+
+        fetchCurrentlyPlaying();
+        setInterval(fetchCurrentlyPlaying, 5000); // Poll every 5 seconds to re-sync
+    </script>
+</body>
+</html>

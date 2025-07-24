@@ -1,0 +1,22 @@
+{
+  "name": "livey",
+  "version": "1.0.0",
+  "description": "A stylish digital clock",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.5",
+    "querystring": "^0.2.1"
+  },
+  "keywords": [
+    "clock",
+    "nodejs",
+    "spotify"
+  ],
+  "author": "",
+  "license": "ISC"
+}
